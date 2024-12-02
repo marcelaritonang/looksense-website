@@ -1,9 +1,7 @@
-import { NextResponse } from 'next/server'
-import * as tf from '@tensorflow/tfjs-node'
-import { promises as fs } from 'fs'
-import path from 'path'
+import { NextResponse } from 'next/server';
+import * as tf from '@tensorflow/tfjs';
 
-const MODEL_PATH = 'public/model/model.json'
+const MODEL_PATH = '/model/model.json';
 const classes = [
     "Bags",
     "Bottomwear",
@@ -12,73 +10,83 @@ const classes = [
     "Shoes",
     "Topwear",
     "Watches"
-]
+];
 
-let model: tf.GraphModel | null = null
+let model: tf.GraphModel | null = null;
 
 async function loadModel() {
     try {
         if (!model) {
-            model = await tf.loadGraphModel(`file://${path.resolve(MODEL_PATH)}`)
+            model = await tf.loadGraphModel(MODEL_PATH);
         }
-        return model
+        return model;
     } catch (error) {
-        console.error('Error loading model:', error)
-        throw new Error('Failed to load model')
+        console.error('Error loading model:', error);
+        throw new Error('Failed to load model');
     }
 }
 
 function normalizeConfidence(value: number): number {
-    // Memastikan confidence dalam range 0-100 dengan 2 desimal
     return Math.min(100, Math.max(0, parseFloat((value * 100).toFixed(2))));
+}
+
+function imageToTensor(imageData: ArrayBuffer): Promise<tf.Tensor> {
+    const image = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const blob = new Blob([imageData]);
+    const url = URL.createObjectURL(blob);
+
+    return new Promise<tf.Tensor>((resolve, reject) => {
+        image.onload = () => {
+            canvas.width = 128;
+            canvas.height = 128;
+            ctx?.drawImage(image, 0, 0, 128, 128);
+            const imageData = ctx?.getImageData(0, 0, 128, 128);
+            const tensor = tf.browser.fromPixels(imageData!);
+            resolve(tensor);
+        };
+        image.onerror = (err) => reject(err);
+        image.src = url;
+    });
 }
 
 export async function POST(request: Request) {
     try {
-        const data = await request.formData()
-        const file: File | null = data.get('image') as File
+        const data = await request.formData();
+        const file: File | null = data.get('image') as File;
 
         if (!file) {
             return NextResponse.json(
                 { error: 'No image provided' },
                 { status: 400 }
-            )
+            );
         }
 
-        // Load model if not loaded
-        const loadedModel = await loadModel()
+        const buffer = await file.arrayBuffer();
+        const tensor = await imageToTensor(buffer);
 
-        // Convert image to tensor
-        const buffer = await file.arrayBuffer()
-        const imageData = new Uint8Array(buffer)
-        const tensor = tf.node.decodeImage(imageData)
-        
-        // Preprocess image
         const preprocessed = tf.tidy(() => {
             return tensor
-                .resizeBilinear([128, 128])
                 .expandDims()
                 .toFloat()
-                .div(255.0)
-        })
+                .div(255.0);
+        });
 
-        // Get prediction
-        const predictions = await loadedModel.predict(preprocessed) as tf.Tensor
-        
-        // Apply softmax normalization
-        const softmaxPreds = tf.softmax(predictions)
-        const dataArray = await softmaxPreds.data()
+        const loadedModel = await loadModel();
+        const predictions = await loadedModel.predict(preprocessed) as tf.Tensor;
 
-        // Get highest probability class
-        const maxProbability = Math.max(...dataArray)
-        const classIndex = dataArray.indexOf(maxProbability)
+        const softmaxPreds = tf.softmax(predictions);
+        const dataArray = await softmaxPreds.data();
 
-        // Normalize probabilities
-        const normalizedProbabilities = Array.from(dataArray).map(prob => 
+        const maxProbability = Math.max(...dataArray);
+        const classIndex = dataArray.indexOf(maxProbability);
+
+        const normalizedProbabilities = Array.from(dataArray).map(prob =>
             normalizeConfidence(prob)
-        )
+        );
 
-        // Get results
         const results = {
             class: classes[classIndex],
             confidence: normalizeConfidence(maxProbability),
@@ -86,21 +94,20 @@ export async function POST(request: Request) {
                 class: cls,
                 probability: normalizedProbabilities[idx]
             }))
-        }
+        };
 
-        // Cleanup
-        tensor.dispose()
-        preprocessed.dispose()
-        predictions.dispose()
-        softmaxPreds.dispose()
+        tensor.dispose();
+        preprocessed.dispose();
+        predictions.dispose();
+        softmaxPreds.dispose();
 
-        return NextResponse.json(results)
+        return NextResponse.json(results);
 
     } catch (error) {
-        console.error('Prediction error:', error)
+        console.error('Prediction error:', error);
         return NextResponse.json(
             { error: 'Failed to process image' },
             { status: 500 }
-        )
+        );
     }
 }
