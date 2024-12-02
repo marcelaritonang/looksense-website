@@ -198,6 +198,36 @@ const Page: React.FC = () => {
               </div>
             </div>
           )}
+
+<div className="mt-12">
+           <div className="max-w-5xl mx-auto px-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+               {FASHION_CATEGORIES.slice(0, 4).map((category) => (
+                 <div
+                   key={category.id}
+                   className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover-effect border border-[#FFA2B6]/20"
+                 >
+                   <h3 className="font-semibold text-gray-800 text-center mb-2">{category.name}</h3>
+                   <p className="text-sm text-gray-600 text-center">{category.description}</p>
+                 </div>
+               ))}
+             </div>
+
+             <div className="mt-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                 {FASHION_CATEGORIES.slice(4).map((category) => (
+                   <div
+                     key={category.id}
+                     className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all hover-effect border border-[#FFA2B6]/20"
+                   >
+                     <h3 className="font-semibold text-gray-800 text-center mb-2">{category.name}</h3>
+                     <p className="text-sm text-gray-600 text-center">{category.description}</p>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           </div>
+         </div>
         </main>
         <Footer />
       </div>
