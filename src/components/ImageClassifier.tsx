@@ -30,7 +30,7 @@ export default function ImageClassifier() {
   const [model, setModel] = useState<tf.GraphModel | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [prediction, setPrediction] = useState<StyleResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,17 +45,15 @@ export default function ImageClassifier() {
 
   const loadModel = async () => {
     try {
-      setIsLoading(true);
       const loadedModel = await tf.loadGraphModel('/model/model.json');
       setModel(loadedModel);
-      setIsLoading(false);
       return loadedModel;
     } catch (error) {
       console.error('Error loading model:', error);
-      setIsLoading(false);
       return null;
     }
   };
+
 
   // Modifikasi bagian proses prediksi
 const analyzePicture = async () => {
