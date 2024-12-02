@@ -13,7 +13,7 @@
     "@tensorflow/tfjs-node": "^4.22.0",
     "framer-motion": "^11.11.13",
     "lucide-react": "^0.456.0",
-    "next": "14.0.3",
+    "next": "15.0.3",
     "react": "^18.0.0",
     "react-dom": "19.0.0-rc-66855b96-20241106"
   },
