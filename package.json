@@ -12,9 +12,9 @@
     "@tensorflow/tfjs": "^4.22.0",
     "framer-motion": "^11.11.13",
     "lucide-react": "^0.456.0",
-    "next": "15.0.3",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "next": "^15.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
