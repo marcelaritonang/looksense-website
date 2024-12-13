@@ -40,10 +40,10 @@ function imageToTensor(imageData: ArrayBuffer): Promise<tf.Tensor> {
 
     return new Promise<tf.Tensor>((resolve, reject) => {
         image.onload = () => {
-            canvas.width = 128;
-            canvas.height = 128;
-            ctx?.drawImage(image, 0, 0, 128, 128);
-            const imageData = ctx?.getImageData(0, 0, 128, 128);
+            canvas.width = 177;
+            canvas.height = 177;
+            ctx?.drawImage(image, 0, 0, 177, 177);
+            const imageData = ctx?.getImageData(0, 0, 177, 177);
             const tensor = tf.browser.fromPixels(imageData!);
             resolve(tensor);
         };
